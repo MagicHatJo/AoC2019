@@ -4,6 +4,8 @@ import sys
 import numpy as np
 from copy import deepcopy
 
+EXPECTED = 19690720
+
 def calculate(code):
     i = 0
     length = len(code)
@@ -18,15 +20,14 @@ def calculate(code):
     return code[0]
 
 def main():
-    if len(sys.argv) is not 3:
-        print("Usage: ./01.py input [expected output]")
+    if len(sys.argv) is not 2:
+        print("Usage: ./01.py input")
         return
     code = [int(i) for i in np.genfromtxt(sys.argv[1], delimiter=',')]
     for n in range(0, 100):
         for v in range(0, 100):
-            code[1] = n
-            code[2] = v
-            if int(calculate(deepcopy(code))) == int(sys.argv[2]):
+            code[1:3] = n, v
+            if calculate(code[:]) == EXPECTED:
                 print(100 * n + v)
                 return
     print("Error")
