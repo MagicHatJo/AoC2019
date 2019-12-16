@@ -1,10 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 import sys
 import itertools
 import numpy as np
 
-import Intcode
+from collections import deque
+from Intcode import Intcode, InputInterrupt, OutputInterrupt
 
 def calculate_permutation(mem, permutation):
     vm = []
@@ -16,9 +17,14 @@ def calculate_permutation(mem, permutation):
     while not all(map(lambda x: x.complete, vm)):
         i = (i + 1) % 5
         while not vm[i].complete:
-            vm[i].run()
-            vm[(i + 1) % 5].input_queue.append(vm[i].output_queue.get())
-    return vm[0].input_queue.get()
+            try:
+                vm[i].run()
+            except(OutputInterrupt):
+                vm[(i + 1) % 5].input_queue.append(vm[i].output_queue[-1])
+                continue
+            except(InputInterrupt):
+                break
+    return vm[0].input_queue[-1]
 
 if __name__ == '__main__':
     if len(sys.argv) is not 2:
@@ -26,8 +32,6 @@ if __name__ == '__main__':
         exit()
 
     code = [int(i) for i in np.genfromtxt(sys.argv[1], delimiter=',')]
-    print(max([calculate_permutation(code, permutation) for permutation in itertools.permutations([5, 6, 7, 8, 9])]))
-
-
     sequences = itertools.permutations([5, 6, 7, 8, 9])
-    print(max(sequences, key = lambda x: calulate_permutation(code, x)))
+    best = max(sequences, key = lambda x: calculate_permutation(code, x))
+    print(calculate_permutation(code, best))
